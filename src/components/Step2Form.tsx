@@ -1,87 +1,64 @@
-import React from "react";
-import { useForm } from "react-hook-form";
-import * as Yup from "yup";
-import { TextField, Select, MenuItem, FormControl, InputLabel, Button } from "@mui/material";
-import { yupResolver } from '@hookform/resolvers/yup'; // Import yupResolver
+// Step2Form.tsx
+import React, { useState, useEffect } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { TextField, Button, Autocomplete } from "@mui/material";
+import axios from "axios";
 import { useDispatch } from "react-redux";
-import { setUserField } from "../features/actions.ts"; // Import setUserField
+import { setStep2Data } from "../features/actions.ts";
+import { addSubmittedUser } from "../features/actions.ts";
+interface Step2FormData {
+  Address?: string;
+  State?: string;
+  City?: string;
+  Country?: string;
+  Pincode?: string;
+}
 
-const step2Schema = Yup.object().shape({
-  password: Yup.string().required("Password is required").min(6, "Password is too short"),
-  confirmPassword: Yup.string().oneOf([Yup.ref("password")], "Passwords must match").required("Confirm Password is required"),
-  address: Yup.object().shape({
-    state: Yup.string().required("State is required"),
-    city: Yup.string().required("City is required"),
-    country: Yup.string().required("Country is required"),
-    postalCode: Yup.string()
-      .matches(/^[0-9]+$/, "Must be only digits")
-      .length(6, "Must be exactly 6 digits")
-      .optional(),
-  }),
-});
-
-const Step2Form: React.FC<{ countries: string[] }> = ({ countries }) => {
+const Step2Form: React.FC = () => {
   const dispatch = useDispatch();
-  const { register, handleSubmit, formState } = useForm({
-    resolver: yupResolver(step2Schema), 
-  });
+  const { register, handleSubmit, setValue, watch } = useForm<Step2FormData>();
+  const [countryOptions, setCountryOptions] = useState<string[]>([]);
 
-  const { errors } = formState;
+  useEffect(() => {
+    // Fetch country options from the API
+    const fetchCountries = async () => {
+      try {
+        const response = await axios.get("https://restcountries.com/v3.1/all");
+        const countries = response.data.map((country: any) => country.name.common);
+        setCountryOptions(countries);
+      } catch (error) {
+        console.error("Error fetching countries:", error);
+      }
+    };
 
-  const onSubmit = (data: Record<string, any>) => {
-    dispatch(setUserField(data)); 
+    fetchCountries();
+  }, []);
+
+  const onSubmit: SubmitHandler<Step2FormData> = (data) => {
+    dispatch(setStep2Data(data));
+    // Additional logic or navigation if needed
   };
+
+  // Watch the "Country" field and set its value in the form state
+  const selectedCountry = watch("Country");
+  useEffect(() => {
+    setValue("Country", selectedCountry);
+  }, [selectedCountry, setValue]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <TextField
-        {...register("password")}
-        label="Password"
-        type="password"
-        error={!!errors.password}
-        helperText={errors.password?.message}
+      <TextField {...register("Address")} label="Address" />
+      <TextField {...register("State")} label="State" />
+      <TextField {...register("City")} label="City" />
+      <Autocomplete
+        {...register("Country")}
+        options={countryOptions}
+        renderInput={(params) => <TextField {...params} label="Country" />}
       />
       <TextField
-        {...register("confirmPassword")}
-        label="Confirm Password"
-        type="password"
-        error={!!errors.confirmPassword}
-        helperText={errors.confirmPassword?.message}
-      />
-      <TextField
-        {...register("address.state")}
-        label="State"
-        error={!!errors.address?.state}
-        helperText={errors.address?.state?.message}
-      />
-      <TextField
-        {...register("address.city")}
-        label="City"
-        error={!!errors.address?.city}
-        helperText={errors.address?.city?.message}
-      />
-      <FormControl required error={!!errors.address?.country}>
-        <InputLabel id="country-label">Country</InputLabel>
-        <Select
-          {...register("address.country")}
-          labelId="country-label"
-          label="Country"
-        >
-          {countries.map((country) => (
-            <MenuItem key={country} value={country}>
-              {country}
-            </MenuItem>
-          ))}
-        </Select>
-        {errors.address?.country?.message && (
-          <span className="error">{errors.address.country.message}</span>
-        )}
-      </FormControl>
-      <TextField
-        {...register("address.postalCode")}
-        label="Postal Code"
-        error={!!errors.address?.postalCode}
-        helperText={errors.address?.postalCode?.message}
+        {...register("Pincode")}
+        label="Pincode"
+        inputProps={{ pattern: "[0-9]*" }}
       />
       <Button type="submit" variant="contained" color="primary">
         Submit
