@@ -1,25 +1,30 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react';
+import Step1Form from './components/Step1Form.tsx';
+import Step2Form from './components/Step2Form.tsx';
+import store from './store.ts';
+import { Provider } from 'react-redux';
 
-function App() {
+const App = () => {
+  const [step, setStep] = useState(1); // Add step state
+  const [countries, setCountries] = useState([]);
+  const goToNextStep = () => {
+    setStep(step + 1);
+  };
+  useEffect(() => {
+    // Replace with your API call or static data if needed
+    fetch('https://restcountries.com/v3.1/alpha/col')
+      .then(res => res.json())
+      .then(data => setCountries(data));
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Provider store={store}>
+      <div>
+        {step === 1 && <Step1Form goToNextStep={goToNextStep} />}
+        {step === 2 && <Step2Form countries={countries} />}
+      </div>
+    </Provider>
   );
-}
+};
 
 export default App;
