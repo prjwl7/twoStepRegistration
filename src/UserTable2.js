@@ -8,6 +8,7 @@ const UserTableStep2 = () => {
   const submittedUsersStep2 = useSelector((state) => state.user.submittedUsersStep2);
 
   useEffect(() => {
+    console.log("submittedUsersStep2:", submittedUsersStep2);
     $("#userTableStep2").DataTable();
   }, [submittedUsersStep2]);
 

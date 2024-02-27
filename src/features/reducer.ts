@@ -57,12 +57,14 @@ const userSlice = createSlice({
       .addCase(setStep2Data, (state, action) => {
         state.step2 = { ...state.step2, ...action.payload };
       })
-      .addCase(addSubmittedUser, (state, action: PayloadAction<User>) => {
+      .addCase(addSubmittedUser, (state, action) => {
         if (state.step === 1) {
           state.submittedUsers = [...state.submittedUsers, action.payload];
         } else if (state.step === 2) {
           state.submittedUsersStep2 = [...state.submittedUsersStep2, action.payload];
         }
+      
+        console.log("State after adding submitted user:", state);
       });
   },
 });

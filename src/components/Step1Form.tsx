@@ -4,7 +4,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 import { TextField, Button, Select, MenuItem, InputLabel, Grid } from "@mui/material";
 import { useDispatch } from "react-redux";
-import { setUserField } from "../features/actions.ts";
+import { setStep } from "../features/actions.ts";
 import { useNavigate } from "react-router-dom";
 import { addSubmittedUser } from "../features/actions.ts";
 interface Step1FormData {
@@ -47,6 +47,7 @@ const Step1Form: React.FC<Step1FormProps> = ({ goToNextStep }) => {
   const onSubmit = (data: Step1FormData) => {
     dispatch(addSubmittedUser(data));
     navigate("/step2");
+    setStep(2);
   };
 
   return (
